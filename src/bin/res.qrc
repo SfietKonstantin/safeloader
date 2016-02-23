@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>test.qml</file>
+        <file>fosdem.jpg</file>
+        <file>test2.qml</file>
     </qresource>
 </RCC>

@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = lib bin
+SUBDIRS = src

@@ -28,29 +28,22 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
  */
-#ifndef SAFELOADER_H
-#define SAFELOADER_H
 
-#include <QQuickItem>
+#include <QGuiApplication>
+#include <QQuickView>
+#include <safeloader.h>
 
-class SafeLoaderPrivate;
-class SafeLoader : public QQuickItem
+int main(int argc, char **argv)
 {
-    Q_OBJECT
-    Q_PROPERTY(QUrl source READ source WRITE setSource DESIGNABLE true)
-public:
-    explicit SafeLoader(QQuickItem *parent = 0);
-    ~SafeLoader();
-    QUrl source() const;
-    bool event(QEvent *e) override;
-public Q_SLOTS:
-    void setSource(const QUrl &source);
-Q_SIGNALS:
-    void sourceChanged();
-private:
-    Q_DECLARE_PRIVATE(SafeLoader)
-    QSGNode * updatePaintNode(QSGNode *node, UpdatePaintNodeData *data) override;
+    qmlRegisterType<SafeLoader>("sl", 1, 0, "SafeLoader");
 
-};
+    QGuiApplication app(argc, argv);
+    QQuickView view;
+    view.setWidth(1024);
+    view.setHeight(768);
+    view.setResizeMode(QQuickView::SizeRootObjectToView);
+    view.setSource(QUrl("qrc:/main.qml"));
 
-#endif // SAFELOADER_H
+    view.show();
+    return app.exec();
+}

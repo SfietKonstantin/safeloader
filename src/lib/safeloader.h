@@ -29,27 +29,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
  */
 
-#include <QGuiApplication>
-#include <QQuickView>
-#include "safeloader.h"
+#ifndef SAFELOADER_H
+#define SAFELOADER_H
 
-int main(int argc, char **argv)
+#include <QQmlEngine>
+#include <QQuickFramebufferObject>
+#include <QQuickRenderControl>
+#include <QQuickWindow>
+#include "qobjectptr.h"
+
+class QSurface;
+class SafeLoader: public QQuickFramebufferObject
 {
-    qmlRegisterType<SafeLoader>("sl", 1, 0, "SafeLoader");
+    Q_OBJECT
+    Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
+public:
+    explicit SafeLoader(QQuickItem *parent = nullptr);
+    Renderer * createRenderer() const;
+    QString source() const;
+    void setSource(const QString &source);
+signals:
+    void sourceChanged();
+private:
+    class Renderer : public QQuickFramebufferObject::Renderer
+    {
+    public:
+        Renderer();
+        ~Renderer();
+        void render() override;
+        QOpenGLFramebufferObject * createFramebufferObject(const QSize &size) override;
+        void synchronize(QQuickFramebufferObject *object) override;
+    private:
+        void cleanup();
 
+        QObjectPtr<QQuickRenderControl> m_renderControl {};
+        QObjectPtr<QQuickWindow> m_window {};
+        QQuickWindow *m_surface {nullptr};
 
-    QGuiApplication app(argc, argv);
+        QMetaObject::Connection m_sceneChangedConnection {};
+        QMetaObject::Connection m_renderRequestedConnection {};
+    };
+    void createComponent();
+    void run();
+    QObjectPtr<QQmlEngine> m_engine {};
+    QObjectPtr<QQmlComponent> m_component {};
+    QObjectPtr<QQuickItem> m_rootItem {};
+    QString m_source;
+};
 
-    QScopedPointer<QWindow> window;
-
-    QQuickView view;
-    view.setWidth(1024);
-    view.setHeight(768);
-
-    view.setResizeMode(QQuickView::SizeRootObjectToView);
-    view.setSource(QUrl("qrc:/main.qml"));
-    view.show();
-
-    return app.exec();
-}
-
+#endif // SAFELOADER_H
